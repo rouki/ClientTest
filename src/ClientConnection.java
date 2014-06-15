@@ -119,17 +119,23 @@ public class ClientConnection extends  Thread{
                         dos.write(buffer);
                         Vector<RandomAccessFile> files = new Vector<RandomAccessFile>();
                         for (String fileName : details.fileList()) {
-                            System.out.println(fileName);
+                            try{
+                            //proccessing file name
+                            System.out.println("file name:"+ fileName);
                             RandomAccessFile raf = new RandomAccessFile(fileName,"rw");
                             files.add(raf);
                             byte[] fileNameBytes = fileName.getBytes();
-                            System.arraycopy(fileNameBytes, 0, buffer, 0, fileNameBytes.length);
-                            buffer[fileNameBytes.length] = '\\';
+                            System.arraycopy(fileNameBytes, 0, buffer, 1, fileNameBytes.length);
+                            buffer[0]=(byte)fileName.length();
+                            //proccessing file size
                             long fileSize = raf.length();
+                            System.out.println("file size "+fileSize);
                             byte[] fileSizeBytes = ByteBuffer.allocate(8).putLong(fileSize).array();
-                            System.arraycopy(fileSizeBytes, 0, buffer, fileNameBytes.length + 1, fileSizeBytes.length);
-                            buffer[fileSizeBytes.length + fileNameBytes.length + 1] = '\\';
+                            buffer[fileName.length()+1]=(byte)fileSizeBytes.length;
+                            System.arraycopy(fileSizeBytes, 0, buffer, fileName.length()+2, fileSizeBytes.length);
+
                             dos.write(buffer);
+                            }catch (Exception e){e.printStackTrace();}
                         }
                         dis.read(buffer);
                         if (buffer[0] == 'd') {
